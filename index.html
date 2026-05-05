@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediLink — App</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#00C896;--gd:#009E78;--gl:rgba(0,200,150,.12);
+  --navy:#0A1628;--nm:#0F2040;--nl:#162B50;
+  --w:#F0F8F4;--gray:#7A90A8;--gray2:#4A607A;
+  --acc:#FFD166;--red:#FF6B6B;--blue:#4FC3F7;
+  --sidebar:220px;--top:56px;
+}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--navy);color:var(--w);min-height:100vh;overflow-x:hidden}
+
+/* ═══ LOGIN PAGE ═══ */
+#login-page{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:var(--navy);
+  background-image:radial-gradient(ellipse 70% 60% at 30% 40%,rgba(0,200,150,.08) 0%,transparent 60%),
+                   radial-gradient(ellipse 50% 50% at 80% 80%,rgba(79,195,247,.06) 0%,transparent 55%);
+}
+.login-box{
+  width:420px;background:var(--nm);border:1px solid rgba(0,200,150,.15);
+  border-radius:20px;padding:3rem 2.5rem;
+  animation:fadeUp .5s ease;
+}
+.login-logo{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;text-align:center;margin-bottom:.3rem}
+.login-logo span{color:var(--g)}
+.login-sub{text-align:center;color:var(--gray);font-size:.85rem;margin-bottom:2.5rem}
+.role-tabs{display:flex;gap:.5rem;margin-bottom:2rem;background:var(--nl);border-radius:10px;padding:4px}
+.role-tab{
+  flex:1;text-align:center;padding:.5rem;border-radius:7px;font-size:.8rem;
+  font-weight:600;cursor:pointer;transition:.2s;color:var(--gray);font-family:'IBM Plex Sans',sans-serif;
+  border:none;background:transparent;
+}
+.role-tab.active{background:var(--g);color:var(--navy)}
+.form-group{margin-bottom:1.2rem}
+label{display:block;font-size:.78rem;font-weight:600;color:var(--gray);margin-bottom:.4rem;letter-spacing:.05em;text-transform:uppercase}
+input[type=text],input[type=password],input[type=email],select,textarea{
+  width:100%;background:var(--nl);border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;padding:.7rem 1rem;color:var(--w);font-size:.9rem;
+  font-family:'IBM Plex Sans',sans-serif;transition:.2s;outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(0,200,150,.1)}
+select option{background:var(--nm);color:var(--w)}
+.btn{
+  width:100%;background:var(--g);color:var(--navy);border:none;
+  border-radius:8px;padding:.8rem;font-size:.95rem;font-weight:700;
+  cursor:pointer;transition:.2s;font-family:'IBM Plex Sans',sans-serif;
+}
+.btn:hover{background:var(--gd);transform:translateY(-1px)}
+.btn-sm{
+  padding:.45rem 1rem;font-size:.82rem;font-weight:600;border-radius:6px;
+  border:none;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:.2s;
+}
+.btn-outline-sm{background:transparent;border:1px solid rgba(0,200,150,.4);color:var(--g);border-radius:6px;padding:.4rem .9rem;font-size:.8rem;cursor:pointer;transition:.2s;font-family:'IBM Plex Sans',sans-serif}
+.btn-outline-sm:hover{background:var(--gl)}
+
+/* ═══ APP SHELL ═══ */
+#app{display:none;min-height:100vh}
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:var(--top);
+  background:rgba(10,22,40,.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(0,200,150,.1);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.5rem;z-index:200;
+}
+.topbar-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem}
+.topbar-logo span{color:var(--g)}
+.topbar-right{display:flex;align-items:center;gap:1rem}
+.user-chip{
+  display:flex;align-items:center;gap:.6rem;
+  background:var(--nl);border-radius:50px;padding:.3rem .8rem .3rem .3rem;
+}
+.avatar{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--g);display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:700;color:var(--navy);
+}
+.user-name{font-size:.82rem;font-weight:600}
+.role-badge-top{
+  font-size:.65rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  background:rgba(0,200,150,.15);color:var(--g);border-radius:50px;
+  padding:.15rem .6rem;
+}
+.notif{
+  width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.1);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  position:relative;font-size:.9rem;transition:.2s;
+}
+.notif:hover{border-color:var(--g)}
+.notif-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--red);
+  position:absolute;top:6px;right:6px;
+}
+.logout-btn{
+  background:transparent;border:1px solid rgba(255,255,255,.12);color:var(--gray);
+  border-radius:6px;padding:.35rem .8rem;font-size:.78rem;cursor:pointer;
+  font-family:'IBM Plex Sans',sans-serif;transition:.2s;
+}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+/* sidebar */
+.sidebar{
+  position:fixed;top:var(--top);left:0;bottom:0;width:var(--sidebar);
+  background:var(--nm);border-right:1px solid rgba(255,255,255,.06);
+  padding:1.5rem .75rem;overflow-y:auto;z-index:100;
+}
+.nav-section{margin-bottom:1.5rem}
+.nav-section-label{
+  font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gray2);padding:0 .75rem;margin-bottom:.5rem;
+}
+.nav-item{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.65rem .75rem;border-radius:8px;cursor:pointer;
+  transition:.15s;color:var(--gray);font-size:.875rem;font-weight:500;
+  margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left;
+  font-family:'IBM Plex Sans',sans-serif;
+}
+.nav-item:hover{background:rgba(255,255,255,.05);color:var(--w)}
+.nav-item.active{background:rgba(0,200,150,.12);color:var(--g)}
+.nav-icon{width:18px;text-align:center;font-size:1rem}
+.nav-badge{
+  margin-left:auto;background:var(--red);color:#fff;
+  border-radius:50px;font-size:.65rem;font-weight:700;
+  padding:.1rem .45rem;
+}
+
+/* main */
+.main{
+  margin-top:var(--top);margin-left:var(--sidebar);
+  padding:2rem;min-height:calc(100vh - var(--top));
+}
+.page{display:none}
+.page.active{display:block}
+
+/* ═══ SHARED COMPONENTS ═══ */
+.page-header{margin-bottom:2rem}
+.page-title{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;letter-spacing:-.5px}
+.page-sub{color:var(--gray);font-size:.875rem;margin-top:.3rem}
+
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem}
+.stat-card{
+  background:var(--nm);border:1px solid rgba(255,255,255,.06);
+  border-radius:14px;padding:1.25rem 1.5rem;
+  transition:.2s;
+}
+.stat-card:hover{border-color:rgba(0,200,150,.2)}
+.stat-card-label{font-size:.75rem;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem}
+.stat-card-val{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;line-height:1}
+.stat-card-val.green{color:var(--g)}
+.stat-card-val.yellow{color:var(--acc)}
+.stat-card-val.red{color:var(--red)}
+.stat-card-val.blue{color:var(--blue)}
+.stat-card-trend{font-size:.75rem;color:var(--gray);margin-top:.4rem}
+.stat-card-trend.up{color:#6ee7b7}
+.stat-card-trend.down{color:var(--red)}
+
+.card{
+  background:var(--nm);border:1px solid rgba(255,255,255,.06);
+  border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;
+}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.card-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700}
+
+/* table */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{
+  font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--gray);padding:.75rem 1rem;text-align:left;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+td{
+  padding:.8rem 1rem;font-size:.875rem;
+  border-bottom:1px solid rgba(255,255,255,.04);color:var(--w);
+}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+/* badges */
+.badge{
+  display:inline-block;border-radius:50px;padding:.2rem .65rem;
+  font-size:.72rem;font-weight:700;letter-spacing:.04em;
+}
+.badge-green{background:rgba(0,200,150,.15);color:var(--g)}
+.badge-red{background:rgba(255,107,107,.15);color:var(--red)}
+.badge-yellow{background:rgba(255,209,102,.15);color:var(--acc)}
+.badge-blue{background:rgba(79,195,247,.15);color:var(--blue)}
+.badge-gray{background:rgba(255,255,255,.08);color:var(--gray)}
+
+/* grid 2col */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+
+/* progress */
+.progress-bar{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-top:.5rem}
+.progress-fill{height:100%;border-radius:3px;background:var(--g);transition:width .4s ease}
+.progress-fill.warn{background:var(--acc)}
+.progress-fill.danger{background:var(--red)}
+
+/* chart bars (CSS only) */
+.bar-chart{display:flex;align-items:flex-end;gap:.5rem;height:120px;padding-top:1rem}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:.4rem}
+.bar{width:100%;border-radius:4px 4px 0 0;background:var(--g);opacity:.7;transition:opacity .2s;min-height:4px}
+.bar:hover{opacity:1}
+.bar-label{font-size:.65rem;color:var(--gray);text-align:center}
+.bar-val{font-size:.68rem;color:var(--g);font-weight:600}
+
+/* activity feed */
+.activity-item{display:flex;gap:.75rem;align-items:flex-start;padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{width:8px;height:8px;border-radius:50%;background:var(--g);margin-top:5px;flex-shrink:0}
+.activity-dot.red{background:var(--red)}
+.activity-dot.yellow{background:var(--acc)}
+.activity-text{font-size:.85rem;color:var(--w);line-height:1.5}
+.activity-time{font-size:.75rem;color:var(--gray);margin-top:.15rem}
+
+/* forms inside cards */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.form-row.full{grid-template-columns:1fr}
+
+/* search bar */
+.search-bar{
+  display:flex;gap:.75rem;margin-bottom:1.5rem;align-items:center;
+}
+.search-input{
+  flex:1;background:var(--nm);border:1px solid rgba(255,255,255,.08);
+  border-radius:8px;padding:.65rem 1rem;color:var(--w);font-size:.875rem;
+  font-family:'IBM Plex Sans',sans-serif;outline:none;transition:.2s;
+}
+.search-input:focus{border-color:var(--g)}
+.filter-select{
+  background:var(--nm);border:1px solid rgba(255,255,255,.08);
+  border-radius:8px;padding:.65rem 1rem;color:var(--w);font-size:.875rem;
+  font-family:'IBM Plex Sans',sans-serif;outline:none;cursor:pointer;
+}
+
+/* pill tabs */
+.pill-tabs{display:flex;gap:.4rem;margin-bottom:1.5rem}
+.pill-tab{
+  padding:.4rem 1rem;border-radius:50px;font-size:.8rem;font-weight:600;
+  cursor:pointer;border:1px solid rgba(255,255,255,.1);color:var(--gray);
+  background:transparent;font-family:'IBM Plex Sans',sans-serif;transition:.2s;
+}
+.pill-tab.active{background:var(--g);color:var(--navy);border-color:var(--g)}
+
+/* product card grid */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+.product-card{
+  background:var(--nm);border:1px solid rgba(255,255,255,.06);
+  border-radius:14px;padding:1.25rem;transition:.2s;cursor:pointer;
+}
+.product-card:hover{border-color:rgba(0,200,150,.25);transform:translateY(-2px)}
+.product-icon{
+  width:48px;height:48px;border-radius:10px;background:rgba(0,200,150,.1);
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:1rem;
+}
+.product-name{font-weight:600;font-size:.9rem;margin-bottom:.25rem}
+.product-meta{font-size:.78rem;color:var(--gray);margin-bottom:.75rem}
+.product-price{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;color:var(--g)}
+
+/* order status tracker */
+.status-track{display:flex;gap:0;margin:1rem 0}
+.status-step{
+  flex:1;text-align:center;position:relative;
+}
+.status-step::before{
+  content:'';position:absolute;top:14px;left:50%;right:-50%;
+  height:2px;background:rgba(255,255,255,.1);
+}
+.status-step:last-child::before{display:none}
+.status-step.done::before{background:var(--g)}
+.status-dot{
+  width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.1);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto .5rem;font-size:.75rem;position:relative;z-index:1;
+}
+.status-step.done .status-dot{background:var(--g);color:var(--navy);font-weight:700}
+.status-step.current .status-dot{border:2px solid var(--g);background:transparent;color:var(--g)}
+.status-label{font-size:.7rem;color:var(--gray)}
+.status-step.done .status-label,.status-step.current .status-label{color:var(--w)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeUp .35s ease}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ LOGIN PAGE ══════════════════ -->
+<div id="login-page">
+  <div class="login-box">
+    <div class="login-logo">Medi<span>Link</span></div>
+    <p class="login-sub">Pharmacy B2B Supply Platform</p>
+
+    <div class="role-tabs">
+      <button class="role-tab active" onclick="setRole('pharmacy',this)">💊 Pharmacy</button>
+      <button class="role-tab" onclick="setRole('supplier',this)">📦 Supplier</button>
+      <button class="role-tab" onclick="setRole('admin',this)">🛡 Admin</button>
+    </div>
+
+    <div class="form-group">
+      <label>Username / Email</label>
+      <input type="text" placeholder="Enter your email" id="login-user">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" placeholder="••••••••" id="login-pass">
+    </div>
+    <button class="btn" onclick="doLogin()">Sign In →</button>
+    <p style="text-align:center;margin-top:1rem;font-size:.8rem;color:var(--gray)">
+      New user? <span style="color:var(--g);cursor:pointer">Request Access</span>
+    </p>
+  </div>
+</div>
+
+<!-- ══════════════════ APP SHELL ══════════════════ -->
+<div id="app">
+  <!-- topbar -->
+  <div class="topbar">
+    <div class="topbar-logo">Medi<span>Link</span></div>
+    <div class="topbar-right">
+      <div class="notif"><span>🔔</span><div class="notif-dot"></div></div>
+      <div class="user-chip">
+        <div class="avatar" id="top-avatar">PH</div>
+        <div>
+          <div class="user-name" id="top-name">City Pharmacy</div>
+          <div class="role-badge-top" id="top-role">Pharmacy</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- sidebar -->
+  <div class="sidebar" id="sidebar"></div>
+
+  <!-- main content -->
+  <div class="main">
+
+    <!-- ── ADMIN DASHBOARD ── -->
+    <div class="page" id="page-admin-dashboard">
+      <div class="page-header fade-in">
+        <div class="page-title">Admin Dashboard</div>
+        <div class="page-sub">Platform overview — All users & transactions</div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-card-label">Total Pharmacies</div><div class="stat-card-val green">248</div><div class="stat-card-trend up">↑ 12 this month</div></div>
+        <div class="stat-card"><div class="stat-card-label">Suppliers</div><div class="stat-card-val blue">34</div><div class="stat-card-trend up">↑ 3 new</div></div>
+        <div class="stat-card"><div class="stat-card-label">Orders Today</div><div class="stat-card-val yellow">187</div><div class="stat-card-trend up">↑ 23%</div></div>
+        <div class="stat-card"><div class="stat-card-label">Revenue (Month)</div><div class="stat-card-val green">Rs 4.2M</div><div class="stat-card-trend up">↑ 8%</div></div>
+        <div class="stat-card"><div class="stat-card-label">Pending Issues</div><div class="stat-card-val red">6</div><div class="stat-card-trend down">↓ needs action</div></div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Monthly Orders</div></div>
+          <div class="bar-chart">
+            <div class="bar-col"><div class="bar-val">610</div><div class="bar" style="height:60%"></div><div class="bar-label">Jan</div></div>
+            <div class="bar-col"><div class="bar-val">720</div><div class="bar" style="height:72%"></div><div class="bar-label">Feb</div></div>
+            <div class="bar-col"><div class="bar-val">850</div><div class="bar" style="height:85%"></div><div class="bar-label">Mar</div></div>
+            <div class="bar-col"><div class="bar-val">780</div><div class="bar" style="height:78%"></div><div class="bar-label">Apr</div></div>
+            <div class="bar-col"><div class="bar-val">940</div><div class="bar" style="height:94%"></div><div class="bar-label">May</div></div>
+            <div class="bar-col"><div class="bar-val">880</div><div class="bar" style="height:88%"></div><div class="bar-label">Jun</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Recent Activity</div></div>
+          <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-text">New supplier <b>MedCo Pvt Ltd</b> registered</div><div class="activity-time">2 mins ago</div></div></div>
+          <div class="activity-item"><div class="activity-dot yellow"></div><div><div class="activity-text">Pharmacy #128 flagged for overdue payment</div><div class="activity-time">18 mins ago</div></div></div>
+          <div class="activity-item"><div class="activity-dot red"></div><div><div class="activity-text">Stock alert: Paracetamol 500mg critically low</div><div class="activity-time">1 hr ago</div></div></div>
+          <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-text">Order #ORD-8821 delivered to City Pharmacy</div><div class="activity-time">2 hrs ago</div></div></div>
+          <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-text">Invoice #INV-2041 generated — Rs 84,500</div><div class="activity-time">3 hrs ago</div></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All Users</div><button class="btn-outline-sm">+ Add User</button></div>
+        <div class="tbl-wrap"><table>
+          <tr><th>Name</th><th>Role</th><th>Email</th><th>Status</th><th>Joined</th><th>Action</th></tr>
+          <tr><td>City Pharmacy</td><td><span class="badge badge-blue">Pharmacy</span></td><td>city@pharm.lk</td><td><span class="badge badge-green">Active</span></td><td>Jan 2024</td><td><button class="btn-outline-sm">View</button></td></tr>
+          <tr><td>MedCo Pvt Ltd</td><td><span class="badge badge-yellow">Supplier</span></td><td>info@medco.lk</td><td><span class="badge badge-green">Active</span></td><td>Feb 2024</td><td><button class="btn-outline-sm">View</button></td></tr>
+          <tr><td>Wellness Pharmacy</td><td><span class="badge badge-blue">Pharmacy</span></td><td>wellness@pharm.lk</td><td><span class="badge badge-yellow">Pending</span></td><td>May 2025</td><td><button class="btn-outline-sm">View</button></td></tr>
+          <tr><td>PharmaPlus</td><td><span class="badge badge-yellow">Supplier</span></td><td>sales@pharmaplus.lk</td><td><span class="badge badge-red">Suspended</span></td><td>Mar 2023</td><td><button class="btn-outline-sm">View</button></td></tr>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── PHARMACY DASHBOARD ── -->
+    <div class="page" id="page-pharmacy-dashboard">
+      <div class="page-header fade-in">
+        <div class="page-title">Welcome back, City Pharmacy 👋</div>
+        <div class="page-sub">Here's your order and inventory summary</div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-card-label">Active Orders</div><div class="stat-card-val yellow">12</div><div class="stat-card-trend">3 pending delivery</div></div>
+        <div class="stat-card"><div class="stat-card-label">Total Spent (Month)</div><div class="stat-card-val green">Rs 186,400</div><div class="stat-card-trend up">↑ 14%</div></div>
+        <div class="stat-card"><div class="stat-card-label">Low Stock Items</div><div class="stat-card-val red">7</div><div class="stat-card-trend down">Reorder needed</div></div>
+        <div class="stat-card"><div class="stat-card-label">Expiring Soon</div><div class="stat-card-val yellow">4</div><div class="stat-card-trend">Within 30 days</div></div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Recent Orders</div><button class="btn-outline-sm" onclick="showPage('page-pharmacy-orders')">View All</button></div>
+          <div class="tbl-wrap"><table>
+            <tr><th>Order ID</th><th>Items</th><th>Amount</th><th>Status</th></tr>
+            <tr><td>#ORD-8901</td><td>8 items</td><td>Rs 24,500</td><td><span class="badge badge-blue">Shipped</span></td></tr>
+            <tr><td>#ORD-8880</td><td>5 items</td><td>Rs 11,200</td><td><span class="badge badge-green">Delivered</span></td></tr>
+            <tr><td>#ORD-8855</td><td>12 items</td><td>Rs 38,900</td><td><span class="badge badge-green">Delivered</span></td></tr>
+            <tr><td>#ORD-8820</td><td>3 items</td><td>Rs 6,800</td><td><span class="badge badge-yellow">Processing</span></td></tr>
+          </table></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Stock Alerts</div></div>
+          <div class="activity-item"><div class="activity-dot red"></div><div><div class="activity-text">Paracetamol 500mg — <b>8 units</b> remaining</div><div class="activity-time">Critical</div></div></div>
+          <div class="activity-item"><div class="activity-dot yellow"></div><div><div class="activity-text">Amoxicillin 250mg — <b>24 units</b> remaining</div><div class="activity-time">Low</div></div></div>
+          <div class="activity-item"><div class="activity-dot yellow"></div><div><div class="activity-text">Metformin 500mg — <b>30 units</b> remaining</div><div class="activity-time">Low</div></div></div>
+          <div class="activity-item"><div class="activity-dot red"></div><div><div class="activity-text">Cetirizine 10mg — expires in <b>18 days</b></div><div class="activity-time">Expiry Alert</div></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Browse Catalog</div><button class="btn-outline-sm" onclick="showPage('page-pharmacy-catalog')">Full Catalog →</button></div>
+        <div class="product-grid">
+          <div class="product-card"><div class="product-icon">💊</div><div class="product-name">Paracetamol 500mg</div><div class="product-meta">MedCo | Box of 100</div><div class="product-price">Rs 280</div></div>
+          <div class="product-card"><div class="product-icon">💉</div><div class="product-name">Amoxicillin 250mg</div><div class="product-meta">PharmaPlus | Box of 60</div><div class="product-price">Rs 640</div></div>
+          <div class="product-card"><div class="product-icon">🩺</div><div class="product-name">Metformin 500mg</div><div class="product-meta">MedCo | Box of 120</div><div class="product-price">Rs 420</div></div>
+          <div class="product-card"><div class="product-icon">💊</div><div class="product-name">Cetirizine 10mg</div><div class="product-meta">HealthPharma | Box of 30</div><div class="product-price">Rs 180</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SUPPLIER DASHBOARD ── -->
+    <div class="page" id="page-supplier-dashboard">
+      <div class="page-header fade-in">
+        <div class="page-title">Supplier Dashboard</div>
+        <div class="page-sub">MedCo Pvt Ltd — Sales & Inventory Overview</div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-card-label">Total Products</div><div class="stat-card-val blue">142</div><div class="stat-card-trend">18 categories</div></div>
+        <div class="stat-card"><div class="stat-card-label">New Orders</div><div class="stat-card-val yellow">28</div><div class="stat-card-trend up">↑ 6 today</div></div>
+        <div class="stat-card"><div class="stat-card-label">Revenue (Month)</div><div class="stat-card-val green">Rs 1.84M</div><div class="stat-card-trend up">↑ 11%</div></div>
+        <div class="stat-card"><div class="stat-card-label">Pending Shipments</div><div class="stat-card-val yellow">9</div><div class="stat-card-trend">Ready to dispatch</div></div>
+        <div class="stat-card"><div class="stat-card-label">Low Stock SKUs</div><div class="stat-card-val red">5</div><div class="stat-card-trend down">Replenish needed</div></div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Revenue Trend</div></div>
+          <div class="bar-chart">
+            <div class="bar-col"><div class="bar-val">1.2M</div><div class="bar" style="height:65%"></div><div class="bar-label">Jan</div></div>
+            <div class="bar-col"><div class="bar-val">1.4M</div><div class="bar" style="height:76%"></div><div class="bar-label">Feb</div></div>
+            <div class="bar-col"><div class="bar-val">1.6M</div><div class="bar" style="height:87%"></div><div class="bar-label">Mar</div></div>
+            <div class="bar-col"><div class="bar-val">1.5M</div><div class="bar" style="height:81%"></div><div class="bar-label">Apr</div></div>
+            <div class="bar-col"><div class="bar-val">1.84M</div><div class="bar" style="height:100%"></div><div class="bar-label">May</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Incoming Orders</div><button class="btn-outline-sm" onclick="showPage('page-supplier-orders')">View All</button></div>
+          <div class="tbl-wrap"><table>
+            <tr><th>Order</th><th>Pharmacy</th><th>Amount</th><th>Status</th></tr>
+            <tr><td>#ORD-8901</td><td>City Pharmacy</td><td>Rs 24,500</td><td><span class="badge badge-yellow">Processing</span></td></tr>
+            <tr><td>#ORD-8899</td><td>Wellness Pharm</td><td>Rs 18,200</td><td><span class="badge badge-blue">Shipped</span></td></tr>
+            <tr><td>#ORD-8895</td><td>MediCare</td><td>Rs 31,800</td><td><span class="badge badge-green">Delivered</span></td></tr>
+          </table></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Top Selling Products</div><button class="btn-outline-sm" onclick="showPage('page-inventory')">Manage Inventory →</button></div>
+        <div class="tbl-wrap"><table>
+          <tr><th>Product</th><th>Category</th><th>Stock</th><th>Sold (Month)</th><th>Revenue</th></tr>
+          <tr><td>Paracetamol 500mg</td><td>Analgesic</td><td><span class="badge badge-red">Critical</span></td><td>2,400 units</td><td>Rs 672,000</td></tr>
+          <tr><td>Amoxicillin 250mg</td><td>Antibiotic</td><td><span class="badge badge-green">In Stock</span></td><td>1,800 units</td><td>Rs 1,152,000</td></tr>
+          <tr><td>Metformin 500mg</td><td>Diabetes</td><td><span class="badge badge-yellow">Low</span></td><td>1,200 units</td><td>Rs 504,000</td></tr>
+          <tr><td>Atorvastatin 20mg</td><td>Cardiac</td><td><span class="badge badge-green">In Stock</span></td><td>960 units</td><td>Rs 720,000</td></tr>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── PHARMACY: CATALOG ── -->
+    <div class="page" id="page-pharmacy-catalog">
+      <div class="page-header fade-in">
+        <div class="page-title">Medicine Catalog</div>
+        <div class="page-sub">Browse and order medicines from verified suppliers</div>
+      </div>
+      <div class="search-bar">
+        <input class="search-input" type="text" placeholder="🔍  Search medicines, brands...">
+        <select class="filter-select"><option>All Categories</option><option>Analgesic</option><option>Antibiotic</option><option>Diabetes</option><option>Cardiac</option><option>Vitamins</option></select>
+        <select class="filter-select"><option>All Suppliers</option><option>MedCo</option><option>PharmaPlus</option><option>HealthPharma</option></select>
+      </div>
+      <div class="pill-tabs">
+        <button class="pill-tab active">All</button>
+        <button class="pill-tab">Analgesic</button>
+        <button class="pill-tab">Antibiotic</button>
+        <button class="pill-tab">Diabetes</button>
+        <button class="pill-tab">Cardiac</button>
+        <button class="pill-tab">Vitamins</button>
+      </div>
+      <div class="product-grid">
+        <div class="product-card"><div class="product-icon">💊</div><div class="product-name">Paracetamol 500mg</div><div class="product-meta">MedCo | Box of 100 | Exp: 2027-01</div><div class="product-price" style="margin-bottom:.75rem">Rs 280</div><button class="btn-sm btn" style="width:100%;background:var(--g);color:var(--navy)">Add to Cart</button></div>
+        <div class="product-card"><div class="product-icon">💉</div><div class="product-name">Amoxicillin 250mg</div><div class="product-meta">PharmaPlus | Box of 60 | Exp: 2026-08</div><div class="product-price" style="margin-bottom:.75rem">Rs 640</div><button class="btn-sm btn" style="width:100%;background:var(--g);color:var(--navy)">Add to Cart</button></div>
+        <div class="product-card"><div class="product-icon">🩺</div><div class="product-name">Metformin 500mg</div><div class="product-meta">MedCo | Box of 120 | Exp: 2027-05</div><div class="product-price" style="margin-bottom:.75rem">Rs 420</div><button class="btn-sm btn" style="width:100%;background:var(--g);color:var(--navy)">Add to Cart</button></div>
+        <div class="product-card"><div class="product-icon">❤️</div><div class="product-name">Atorvastatin 20mg</div><div class="product-meta">MedCo | Box of 30 | Exp: 2026-12</div><div class="product-price" style="margin-bottom:.75rem">Rs 750</div><button class="btn-sm btn" style="width:100%;background:var(--g);color:var(--navy)">Add to Cart</button></div>
+        <div class="product-card"><div class="product-icon">💊</div><div class="product-name">Cetirizine 10mg</div><div class="product-meta">HealthPharma | Box of 30 | Exp: 2025-10</div><div class="product-price" style="margin-bottom:.75rem">Rs 180</div><button class="btn-sm btn" style="width:100%;background:var(--g);color:var(--navy)">Add to Cart</button></div>
+        <div class="product-card"><div class="product-icon">🧪</div><div class="product-name">Vitamin C 500mg</div><div class="product-meta">HealthPharma | Box of 60 | Exp: 2027-03</div><div class="product-price" style="margin-bottom:.75rem">Rs 320</div><button class="btn-sm btn" style="width:100%;background:var(--g);color:var(--navy)">Add to Cart</button></div>
+      </div>
+    </div>
+
+    <!-- ── ORDERS (shared view differs by role) ── -->
+    <div class="page" id="page-pharmacy-orders">
+      <div class="page-header fade-in">
+        <div class="page-title">My Orders</div>
+        <div class="page-sub">Track all your orders and delivery status</div>
+      </div>
+      <div class="search-bar">
+        <input class="search-input" type="text" placeholder="🔍  Search by Order ID...">
+        <select class="filter-select"><option>All Status</option><option>Processing</option><option>Shipped</option><option>Delivered</option><option>Cancelled</option></select>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Order #ORD-8901 — Tracking</div><span class="badge badge-blue">Shipped</span></div>
+        <div class="status-track">
+          <div class="status-step done"><div class="status-dot">✓</div><div class="status-label">Placed</div></div>
+          <div class="status-step done"><div class="status-dot">✓</div><div class="status-label">Confirmed</div></div>
+          <div class="status-step done"><div class="status-dot">✓</div><div class="status-label">Packed</div></div>
+          <div class="status-step current"><div class="status-dot">→</div><div class="status-label">Shipped</div></div>
+          <div class="status-step"><div class="status-dot">5</div><div class="status-label">Delivered</div></div>
+        </div>
+        <p style="color:var(--gray);font-size:.82rem;margin-top:.5rem">Expected delivery: <b style="color:var(--w)">May 7, 2025</b></p>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">All Orders</div></div>
+        <div class="tbl-wrap"><table>
+          <tr><th>Order ID</th><th>Date</th><th>Items</th><th>Amount</th><th>Payment</th><th>Status</th><th></th></tr>
+          <tr><td>#ORD-8901</td><td>May 3</td><td>8</td><td>Rs 24,500</td><td><span class="badge badge-green">Paid</span></td><td><span class="badge badge-blue">Shipped</span></td><td><button class="btn-outline-sm">Invoice</button></td></tr>
+          <tr><td>#ORD-8880</td><td>Apr 28</td><td>5</td><td>Rs 11,200</td><td><span class="badge badge-green">Paid</span></td><td><span class="badge badge-green">Delivered</span></td><td><button class="btn-outline-sm">Invoice</button></td></tr>
+          <tr><td>#ORD-8855</td><td>Apr 20</td><td>12</td><td>Rs 38,900</td><td><span class="badge badge-yellow">Credit</span></td><td><span class="badge badge-green">Delivered</span></td><td><button class="btn-outline-sm">Invoice</button></td></tr>
+          <tr><td>#ORD-8820</td><td>Apr 14</td><td>3</td><td>Rs 6,800</td><td><span class="badge badge-green">Paid</span></td><td><span class="badge badge-yellow">Processing</span></td><td><button class="btn-outline-sm">Invoice</button></td></tr>
+          <tr><td>#ORD-8790</td><td>Apr 8</td><td>20</td><td>Rs 72,000</td><td><span class="badge badge-green">Paid</span></td><td><span class="badge badge-green">Delivered</span></td><td><button class="btn-outline-sm">Invoice</button></td></tr>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── SUPPLIER ORDERS ── -->
+    <div class="page" id="page-supplier-orders">
+      <div class="page-header fade-in">
+        <div class="page-title">Incoming Orders</div>
+        <div class="page-sub">Manage orders from pharmacies</div>
+      </div>
+      <div class="search-bar">
+        <input class="search-input" type="text" placeholder="🔍  Search order or pharmacy...">
+        <select class="filter-select"><option>All Status</option><option>New</option><option>Processing</option><option>Shipped</option><option>Delivered</option></select>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Orders Queue</div><span class="badge badge-red" style="margin-left:.5rem">6 New</span></div>
+        <div class="tbl-wrap"><table>
+          <tr><th>Order ID</th><th>Pharmacy</th><th>Date</th><th>Items</th><th>Amount</th><th>Status</th><th>Action</th></tr>
+          <tr><td>#ORD-8901</td><td>City Pharmacy</td><td>May 3</td><td>8</td><td>Rs 24,500</td><td><span class="badge badge-yellow">Processing</span></td><td><button class="btn-outline-sm">Update</button></td></tr>
+          <tr><td>#ORD-8899</td><td>Wellness Pharmacy</td><td>May 3</td><td>4</td><td>Rs 18,200</td><td><span class="badge badge-blue">Shipped</span></td><td><button class="btn-outline-sm">Update</button></td></tr>
+          <tr><td>#ORD-8895</td><td>MediCare</td><td>May 2</td><td>15</td><td>Rs 31,800</td><td><span class="badge badge-green">Delivered</span></td><td><button class="btn-outline-sm">View</button></td></tr>
+          <tr><td>#ORD-8890</td><td>Sun Pharma</td><td>May 2</td><td>6</td><td>Rs 14,600</td><td><span class="badge badge-gray">New</span></td><td><button class="btn-sm btn" style="background:var(--g);color:var(--navy)">Confirm</button></td></tr>
+          <tr><td>#ORD-8885</td><td>HealthFirst</td><td>May 1</td><td>9</td><td>Rs 22,400</td><td><span class="badge badge-gray">New</span></td><td><button class="btn-sm btn" style="background:var(--g);color:var(--navy)">Confirm</button></td></tr>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── INVENTORY ── -->
+    <div class="page" id="page-inventory">
+      <div class="page-header fade-in">
+        <div class="page-title">Inventory Management</div>
+        <div class="page-sub">Track stock levels, expiry dates, and alerts</div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-card-label">Total SKUs</div><div class="stat-card-val blue">142</div></div>
+        <div class="stat-card"><div class="stat-card-label">In Stock</div><div class="stat-card-val green">121</div></div>
+        <div class="stat-card"><div class="stat-card-label">Low Stock</div><div class="stat-card-val yellow">16</div></div>
+        <div class="stat-card"><div class="stat-card-label">Critical / Out</div><div class="stat-card-val red">5</div></div>
+        <div class="stat-card"><div class="stat-card-label">Expiring ≤30d</div><div class="stat-card-val yellow">8</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Stock Overview</div>
+          <button class="btn-outline-sm">+ Add Product</button>
+        </div>
+        <div class="search-bar" style="margin-bottom:1rem">
+          <input class="search-input" type="text" placeholder="🔍  Search product, batch, manufacturer...">
+          <select class="filter-select"><option>All Categories</option><option>Analgesic</option><option>Antibiotic</option><option>Diabetes</option><option>Cardiac</option></select>
+          <select class="filter-select"><option>All Status</option><option>In Stock</option><option>Low Stock</option><option>Critical</option><option>Expiring</option></select>
+        </div>
+        <div class="tbl-wrap"><table>
+          <tr><th>Product</th><th>Category</th><th>Batch</th><th>Stock</th><th>Level</th><th>Expiry</th><th>Status</th><th>Action</th></tr>
+          <tr>
+            <td><b>Paracetamol 500mg</b></td><td>Analgesic</td><td>B2024-441</td><td>48 units</td>
+            <td><div class="progress-bar"><div class="progress-fill danger" style="width:12%"></div></div></td>
+            <td>2027-01-15</td><td><span class="badge badge-red">Critical</span></td>
+            <td><button class="btn-outline-sm">Restock</button></td>
+          </tr>
+          <tr>
+            <td><b>Amoxicillin 250mg</b></td><td>Antibiotic</td><td>B2024-392</td><td>840 units</td>
+            <td><div class="progress-bar"><div class="progress-fill" style="width:84%"></div></div></td>
+            <td>2026-08-20</td><td><span class="badge badge-green">In Stock</span></td>
+            <td><button class="btn-outline-sm">Edit</button></td>
+          </tr>
+          <tr>
+            <td><b>Metformin 500mg</b></td><td>Diabetes</td><td>B2024-510</td><td>120 units</td>
+            <td><div class="progress-bar"><div class="progress-fill warn" style="width:24%"></div></div></td>
+            <td>2027-05-10</td><td><span class="badge badge-yellow">Low</span></td>
+            <td><button class="btn-outline-sm">Restock</button></td>
+          </tr>
+          <tr>
+            <td><b>Atorvastatin 20mg</b></td><td>Cardiac</td><td>B2024-381</td><td>560 units</td>
+            <td><div class="progress-bar"><div class="progress-fill" style="width:70%"></div></div></td>
+            <td>2026-12-01</td><td><span class="badge badge-green">In Stock</span></td>
+            <td><button class="btn-outline-sm">Edit</button></td>
+          </tr>
+          <tr>
+            <td><b>Cetirizine 10mg</b></td><td>Antihistamine</td><td>B2024-298</td><td>200 units</td>
+            <td><div class="progress-bar"><div class="progress-fill warn" style="width:40%"></div></div></td>
+            <td style="color:var(--red)"><b>2025-10-12</b></td><td><span class="badge badge-yellow">Expiring</span></td>
+            <td><button class="btn-outline-sm">Edit</button></td>
+          </tr>
+          <tr>
+            <td><b>Vitamin C 500mg</b></td><td>Supplement</td><td>B2024-620</td><td>1,200 units</td>
+            <td><div class="progress-bar"><div class="progress-fill" style="width:90%"></div></div></td>
+            <td>2027-03-28</td><td><span class="badge badge-green">In Stock</span></td>
+            <td><button class="btn-outline-sm">Edit</button></td>
+          </tr>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ── ADD PRODUCT (Supplier) ── -->
+    <div class="page" id="page-add-product">
+      <div class="page-header fade-in">
+        <div class="page-title">Add New Product</div>
+        <div class="page-sub">List a new medicine on the platform</div>
+      </div>
+      <div class="card" style="max-width:720px">
+        <div class="card-title" style="margin-bottom:1.5rem">Product Details</div>
+        <div class="form-row">
+          <div class="form-group"><label>Medicine Name</label><input type="text" placeholder="e.g. Paracetamol 500mg"></div>
+          <div class="form-group"><label>Generic Name</label><input type="text" placeholder="e.g. Acetaminophen"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Category</label><select><option>Analgesic</option><option>Antibiotic</option><option>Diabetes</option><option>Cardiac</option><option>Vitamins</option></select></div>
+          <div class="form-group"><label>Manufacturer</label><input type="text" placeholder="e.g. MedCo Pvt Ltd"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Batch Number</label><input type="text" placeholder="e.g. B2024-441"></div>
+          <div class="form-group"><label>Expiry Date</label><input type="text" placeholder="YYYY-MM-DD"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Price per Unit (Rs)</label><input type="text" placeholder="0.00"></div>
+          <div class="form-group"><label>Initial Stock (Units)</label><input type="text" placeholder="0"></div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group"><label>Description</label><textarea rows="3" placeholder="Product description, dosage info..."></textarea></div>
+        </div>
+        <div style="display:flex;gap:1rem;margin-top:.5rem">
+          <button class="btn" style="flex:1">Save Product</button>
+          <button class="btn-outline-sm" style="padding:.8rem 1.5rem">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── REPORTS ── -->
+    <div class="page" id="page-reports">
+      <div class="page-header fade-in">
+        <div class="page-title">Reports & Analytics</div>
+        <div class="page-sub">Platform-wide performance metrics</div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-card-label">Total Revenue</div><div class="stat-card-val green">Rs 4.2M</div><div class="stat-card-trend up">↑ 8% vs last month</div></div>
+        <div class="stat-card"><div class="stat-card-label">Total Orders</div><div class="stat-card-val blue">2,184</div><div class="stat-card-trend up">↑ 23%</div></div>
+        <div class="stat-card"><div class="stat-card-label">Active Pharmacies</div><div class="stat-card-val yellow">248</div><div class="stat-card-trend up">↑ 12 new</div></div>
+        <div class="stat-card"><div class="stat-card-label">Avg Order Value</div><div class="stat-card-val green">Rs 18,400</div><div class="stat-card-trend up">↑ 5%</div></div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Revenue by Month</div></div>
+          <div class="bar-chart">
+            <div class="bar-col"><div class="bar-val">2.8M</div><div class="bar" style="height:66%"></div><div class="bar-label">Jan</div></div>
+            <div class="bar-col"><div class="bar-val">3.1M</div><div class="bar" style="height:73%"></div><div class="bar-label">Feb</div></div>
+            <div class="bar-col"><div class="bar-val">3.6M</div><div class="bar" style="height:85%"></div><div class="bar-label">Mar</div></div>
+            <div class="bar-col"><div class="bar-val">3.4M</div><div class="bar" style="height:81%"></div><div class="bar-label">Apr</div></div>
+            <div class="bar-col"><div class="bar-val">4.2M</div><div class="bar" style="height:100%"></div><div class="bar-label">May</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Top Categories</div></div>
+          <div style="margin-top:.5rem">
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:.3rem"><span>Antibiotics</span><span style="color:var(--g)">38%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:38%"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin:.8rem 0 .3rem"><span>Analgesics</span><span style="color:var(--g)">27%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:27%"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin:.8rem 0 .3rem"><span>Diabetes</span><span style="color:var(--g)">18%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:18%"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin:.8rem 0 .3rem"><span>Cardiac</span><span style="color:var(--acc)">12%</span></div>
+            <div class="progress-bar"><div class="progress-fill warn" style="width:12%"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:.82rem;margin:.8rem 0 .3rem"><span>Others</span><span style="color:var(--gray)">5%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:5%;opacity:.4"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Top Suppliers by Revenue</div></div>
+        <div class="tbl-wrap"><table>
+          <tr><th>Supplier</th><th>Products</th><th>Orders (Month)</th><th>Revenue</th><th>Growth</th></tr>
+          <tr><td>MedCo Pvt Ltd</td><td>48</td><td>682</td><td>Rs 1.84M</td><td><span class="badge badge-green">↑ 11%</span></td></tr>
+          <tr><td>PharmaPlus</td><td>36</td><td>524</td><td>Rs 1.21M</td><td><span class="badge badge-green">↑ 7%</span></td></tr>
+          <tr><td>HealthPharma</td><td>28</td><td>398</td><td>Rs 820K</td><td><span class="badge badge-yellow">↑ 2%</span></td></tr>
+          <tr><td>SciMed Lanka</td><td>22</td><td>312</td><td>Rs 680K</td><td><span class="badge badge-red">↓ 3%</span></td></tr>
+        </table></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+var currentRole = 'pharmacy';
+var currentPage = '';
+
+var navConfig = {
+  pharmacy: [
+    {label:'Main', items:[
+      {id:'page-pharmacy-dashboard', icon:'📊', text:'Dashboard'},
+      {id:'page-pharmacy-catalog', icon:'💊', text:'Browse Catalog'},
+      {id:'page-pharmacy-orders', icon:'🛒', text:'My Orders', badge:3},
+    ]},
+    {label:'Account', items:[
+      {id:'page-reports', icon:'📈', text:'Reports'},
+    ]}
+  ],
+  supplier: [
+    {label:'Main', items:[
+      {id:'page-supplier-dashboard', icon:'📊', text:'Dashboard'},
+      {id:'page-supplier-orders', icon:'📦', text:'Orders', badge:6},
+      {id:'page-inventory', icon:'🗃️', text:'Inventory'},
+      {id:'page-add-product', icon:'➕', text:'Add Product'},
+    ]},
+    {label:'Reports', items:[
+      {id:'page-reports', icon:'📈', text:'Analytics'},
+    ]}
+  ],
+  admin: [
+    {label:'Main', items:[
+      {id:'page-admin-dashboard', icon:'🛡', text:'Dashboard'},
+      {id:'page-inventory', icon:'🗃️', text:'Inventory'},
+      {id:'page-reports', icon:'📈', text:'Reports'},
+    ]},
+    {label:'Users', items:[
+      {id:'page-admin-dashboard', icon:'👥', text:'Manage Users'},
+    ]}
+  ]
+};
+
+var defaultPage = {pharmacy:'page-pharmacy-dashboard', supplier:'page-supplier-dashboard', admin:'page-admin-dashboard'};
+var userInfo = {
+  pharmacy:{name:'City Pharmacy', initials:'CP', roleLabel:'Pharmacy'},
+  supplier:{name:'MedCo Pvt Ltd', initials:'MC', roleLabel:'Supplier'},
+  admin:{name:'Admin User', initials:'AD', roleLabel:'Admin'}
+};
+
+function setRole(role, btn) {
+  currentRole = role;
+  document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function doLogin() {
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  var u = userInfo[currentRole];
+  document.getElementById('top-avatar').textContent = u.initials;
+  document.getElementById('top-name').textContent = u.name;
+  document.getElementById('top-role').textContent = u.roleLabel;
+  buildSidebar();
+  showPage(defaultPage[currentRole]);
+}
+
+function doLogout() {
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+function buildSidebar() {
+  var sb = document.getElementById('sidebar');
+  sb.innerHTML = '';
+  var sections = navConfig[currentRole];
+  sections.forEach(function(sec) {
+    var sDiv = document.createElement('div');
+    sDiv.className = 'nav-section';
+    sDiv.innerHTML = '<div class="nav-section-label">'+sec.label+'</div>';
+    sec.items.forEach(function(item) {
+      var btn = document.createElement('button');
+      btn.className = 'nav-item';
+      btn.setAttribute('data-page', item.id);
+      btn.innerHTML = '<span class="nav-icon">'+item.icon+'</span><span>'+item.text+'</span>'+(item.badge?'<span class="nav-badge">'+item.badge+'</span>':'');
+      btn.onclick = function() { showPage(item.id); };
+      sDiv.appendChild(btn);
+    });
+    sb.appendChild(sDiv);
+  });
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  var pg = document.getElementById(id);
+  if(pg){ pg.classList.add('active'); pg.classList.add('fade-in'); }
+  document.querySelectorAll('.nav-item').forEach(function(n){
+    n.classList.toggle('active', n.getAttribute('data-page') === id);
+  });
+  currentPage = id;
+}
+
+document.querySelectorAll('.pill-tab').forEach(function(t){
+  t.addEventListener('click', function(){
+    t.closest('.pill-tabs').querySelectorAll('.pill-tab').forEach(function(x){ x.classList.remove('active'); });
+    t.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
